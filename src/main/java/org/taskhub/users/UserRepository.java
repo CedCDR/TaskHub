@@ -1,8 +1,10 @@
 package org.taskhub.users;
 
 
-import jakarta.persistence.Id;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Id> {
+public interface UserRepository extends JpaRepository<User, Long> {
+
+
 }

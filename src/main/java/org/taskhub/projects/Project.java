@@ -1,4 +1,4 @@
-package org.taskhub.tasks;
+package org.taskhub.projects;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.Entity;
@@ -6,8 +6,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
+import org.taskhub.tasks.Task;
 import org.taskhub.users.User;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 @Getter
@@ -15,7 +17,7 @@ import java.util.Date;
 @NoArgsConstructor
 
 @Entity
-public class Task {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,17 +26,21 @@ public class Task {
     @Nonnull
     private String name;
 
-    private String description;
-
-    private Date dueDate;
-
-    //private Enum progress
-
-    private User responsibleUser;
+    @Nonnull
+    private long  projectNumber;
 
     @Nonnull
+    private String projectLead;
+
+    private ArrayList<User> assignedUsers;
+
+    private ArrayList<Task> tasks;
+
+    private Boolean isActive;
+
+    //public Enum progress;
+
     public Date createdAt;
 
-    @Nonnull
     public Date updatedAt;
 }

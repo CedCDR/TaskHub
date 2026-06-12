@@ -2,16 +2,16 @@ package org.taskhub.users;
 
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.taskhub.roles.Role;
+import org.taskhub.tasks.Task;
 
+import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
 
 @Entity
 @Table(name = "users")
@@ -34,8 +34,13 @@ public class User {
 
     private String profilePictureURL;
 
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<Role>();
 
-    //private Set<Task> assignedTasks;
+    private Set<Task> assignedTasks = new HashSet<Task>();
 
+    //Hilfsmethoden
+    public void addRole(Role role)
+    {
+        this.roles.add(role);
+    }
 }
