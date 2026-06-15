@@ -10,6 +10,9 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
+// Ohne explicitlyIncluded würde die von der Datenbank generierten ID beim Vergleich
+// von zwei Rollen-Objekten verwendet werden
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 @Entity
 public class Role {
@@ -18,6 +21,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
+    @EqualsAndHashCode.Include //Nur Namen vergleichen
     @Nonnull
     private String name;
 }

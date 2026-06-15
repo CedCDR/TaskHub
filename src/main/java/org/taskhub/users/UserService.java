@@ -38,10 +38,19 @@ public class UserService {
         return true;
     }
 
-    public User assignRolesToUser(Long userId, Role rolle){
+    public User assignRoleToUser(Long userId, Role rolle)
+    {
          return userRepository.findById(userId).map(user -> {
              user.addRole(rolle);
              return userRepository.save(user);
          }).orElseThrow(() -> new RuntimeException("User nicht gefunden mit ID: " + userId));
+    }
+
+    public User removeRoleFromUser(Long userId, Role rolle)
+    {
+        return userRepository.findById(userId).map(user  -> {
+            user.removeRole(rolle);
+            return userRepository.save(user);
+        }).orElseThrow(() -> new RuntimeException("User nicht gefunden mit der ID: " + userId));
     }
 }
