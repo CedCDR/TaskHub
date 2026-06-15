@@ -1,10 +1,7 @@
 package org.taskhub.roles;
 
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -22,6 +19,7 @@ public class Role {
     private long id;
 
     @EqualsAndHashCode.Include //Nur Namen vergleichen
+    @Column(unique = true) //Keine Rollen mit identischen Namen
     @Nonnull
     private String name;
 }

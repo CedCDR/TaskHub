@@ -1,5 +1,6 @@
 package org.taskhub.users;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,9 +35,8 @@ public class User {
 
     private String profilePictureURL;
 
+    @ManyToMany
     private Set<Role> roles = new HashSet<Role>();
-
-    private Set<Task> assignedTasks = new HashSet<Task>();
 
     //Hilfsmethoden
     public void addRole(Role role)

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.taskhub.roles.Role;
 import org.taskhub.roles.RoleRepository;
+import org.taskhub.tasks.Task;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,8 +19,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
-    public Optional<User> getUserById(Long id){
-        return userRepository.findById(id);
+    public User getUserById(Long id){
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException( "User nicht gefunden mit der ID: " + id));
     }
 
     public List<User> getAllUsers() {

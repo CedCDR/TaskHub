@@ -1,10 +1,7 @@
 package org.taskhub.tasks;
 
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.taskhub.users.User;
 
@@ -30,6 +27,8 @@ public class Task {
 
     //private Enum progress
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User responsibleUser;
 
     @Nonnull
