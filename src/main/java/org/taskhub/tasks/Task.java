@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
 import org.taskhub.entities.BaseEntity;
+import org.taskhub.projects.Project;
 import org.taskhub.users.User;
 
 import java.util.Date;
@@ -33,5 +34,9 @@ public class Task extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User responsibleUser;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Project project;
 
 }

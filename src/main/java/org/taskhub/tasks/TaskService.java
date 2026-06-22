@@ -53,6 +53,10 @@ public class TaskService {
     {
         return taskRepository.findById(taskId).map(task -> {
             task.setResponsibleUser(null);
+            if (task.getProgress() == TaskProgress.ASSIGNED)
+            {
+                task.setProgress(TaskProgress.UNASSIGNED);
+            }
             return taskRepository.save(task);
         }).orElseThrow(() -> new RuntimeException("Task nicht  gefunden mit der ID: " + taskId));
     }

@@ -1,10 +1,7 @@
 package org.taskhub.projects;
 
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.taskhub.entities.BaseEntity;
 import org.taskhub.tasks.Task;
@@ -12,6 +9,8 @@ import org.taskhub.users.User;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -30,15 +29,21 @@ public class Project extends BaseEntity {
     @Nonnull
     private long  projectNumber;
 
-    @Nonnull
-    private String projectLead;
+    @ManyToOne
+    @JoinColumn(name = "project_lead_id")
+    private User projectLead;
 
-    private ArrayList<User> assignedUsers;
-
-    private ArrayList<Task> tasks;
+    @ManyToMany
+    @JoinTable(
+            name = "project_users",
+            joinColumns = @JoinColumn(name = "project_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> assignedUsers = new HashSet<>();
 
     private Boolean isActive;
 
-    //public Enum progress;
+    @Enumerated(EnumType.STRING)
+    private ProjectProgress progress = ProjectProgress.ACTIVE;
 
 }
