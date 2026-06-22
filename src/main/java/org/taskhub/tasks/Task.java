@@ -3,6 +3,7 @@ package org.taskhub.tasks;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
+import org.taskhub.entities.BaseEntity;
 import org.taskhub.users.User;
 
 import java.util.Date;
@@ -12,7 +13,7 @@ import java.util.Date;
 @NoArgsConstructor
 
 @Entity
-public class Task {
+public class Task extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,15 +26,12 @@ public class Task {
 
     private Date dueDate;
 
-    //private Enum progress
+    //Durch @Enumerated(EnumType.STRING) wird das Enum als String in der Datenbank gespeichert, nicht als Int
+    @Enumerated(EnumType.STRING)
+    private TaskProgress progress = TaskProgress.UNASSIGNED;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User responsibleUser;
 
-    @Nonnull
-    public Date createdAt;
-
-    @Nonnull
-    public Date updatedAt;
 }

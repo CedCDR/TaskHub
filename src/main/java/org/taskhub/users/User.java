@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
+import org.taskhub.entities.BaseEntity;
 import org.taskhub.roles.Role;
 import org.taskhub.tasks.Task;
 
@@ -16,7 +17,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

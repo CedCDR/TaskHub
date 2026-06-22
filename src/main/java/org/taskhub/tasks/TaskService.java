@@ -19,6 +19,15 @@ public class TaskService {
 
     public Task createTask(Task createdTask) {return taskRepository.save(createdTask);}
 
+    public Task updateTaskProgress(Long taskId, TaskProgress newProgress)
+    {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task nicht gefunden mit ID: " + taskId));
+
+        task.setProgress(newProgress);
+        return taskRepository.save(task);
+    }
+
     public boolean deleteTask(Long id)  {
         if (!taskRepository.existsById(id)) {
             return false;
@@ -31,6 +40,11 @@ public class TaskService {
     {
         return taskRepository.findById(taskId).map(task -> {
             task.setResponsibleUser(responsibleUser);
+
+            if (task.getProgress() == TaskProgress.UNASSIGNED)
+            {
+                task.setProgress(TaskProgress.ASSIGNED);
+            }
         return taskRepository.save(task);
         }).orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + taskId));
     }

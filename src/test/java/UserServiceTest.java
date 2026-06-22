@@ -44,7 +44,8 @@ public class UserServiceTest {
     }
 
     @Test
-    void getUserById_ThrowsException_WhenUserDoesntExist() {
+    void getUserById_ThrowsException_WhenUserDoesntExist()
+    {
             // 1. Mockito Setup: Wir lassen das Repository beim Suchen nach ID 99L ein leeres Optional zurückgeben,
             // was in der Regel darauf hindeutet, dass der Benutzer nicht existiert.
             when(userRepository.findById(99L)).thenReturn(Optional.empty());
@@ -55,8 +56,6 @@ public class UserServiceTest {
                 userService.getUserById(99L);
             });
 
-            // Sie können hier zusätzlich überprüfen, ob die Meldung korrekt ist:
-            String expectedMessage = "User nicht gefunden mit ID: 99"; // Passen Sie das Format der Meldung an!
             assertTrue(exception.getMessage().contains("User nicht gefunden"));
     }
 

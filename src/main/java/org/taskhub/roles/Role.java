@@ -3,6 +3,7 @@ package org.taskhub.roles;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
+import org.taskhub.entities.BaseEntity;
 
 @Getter
 @Setter

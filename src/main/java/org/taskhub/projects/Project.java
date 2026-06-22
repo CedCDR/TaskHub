@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.*;
+import org.taskhub.entities.BaseEntity;
 import org.taskhub.tasks.Task;
 import org.taskhub.users.User;
 
@@ -17,7 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 
 @Entity
-public class Project {
+public class Project extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -40,7 +41,4 @@ public class Project {
 
     //public Enum progress;
 
-    public Date createdAt;
-
-    public Date updatedAt;
 }
