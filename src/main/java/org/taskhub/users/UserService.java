@@ -31,20 +31,24 @@ public class UserService {
         return userRepository.save(createdUser);
     }
 
-    public boolean deleteUser(Long id)  {
+    public void deleteUser(Long id)
+    {
         if (!userRepository.existsById(id)) {
-            return false;
+            throw new RuntimeException("User nicht gefunden  mit ID: " + id);
         }
         userRepository.deleteById(id);
-        return true;
     }
 
-    public User assignRoleToUser(Long userId, Role rolle)
+    public User assignRoleToUser(Long userId, Long roleId)
     {
-         return userRepository.findById(userId).map(user -> {
-             user.addRole(rolle);
-             return userRepository.save(user);
-         }).orElseThrow(() -> new RuntimeException("User nicht gefunden mit ID: " + userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User nicht gefunden mit der ID: " + userId));
+
+        Role rolle = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Rolle nicht gefunden mit der ID: " + roleId));
+
+        user.addRole(rolle);
+        return userRepository.save(user);
     }
 
     public User removeRoleFromUser(Long userId, Role rolle)

@@ -20,6 +20,9 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private RoleRepository roleRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -84,12 +87,10 @@ public class UserServiceTest {
     // ==================================
 
     @Test
-    void deleteUser_ReturnsTrueAndDeletes_WhenUserExists()
+    void deleteUser_DeletesUserOnce_WhenUserExists()
     {
         when(userRepository.existsById(1L)).thenReturn(true);
-        boolean result = userService.deleteUser(1L);
-
-        assertTrue(result);
+        userService.deleteUser(1L);
 
         verify(userRepository, times(1)).deleteById(1L);
     }
@@ -101,9 +102,11 @@ public class UserServiceTest {
         // was in der Regel darauf hindeutet, dass der Benutzer nicht existiert.
         when(userRepository.existsById(99L)).thenReturn(false);
 
-        boolean result = userService.deleteUser(99L);
+        assertThrows(RuntimeException.class, () -> {
+            userService.deleteUser(99L);
+        });
 
-        assertFalse(result);
+        verify(userRepository, times(0)).deleteById(99L);
     }
 
     // ==================================
@@ -122,8 +125,9 @@ public class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(dummyUser));
         when(userRepository.save(dummyUser)).thenReturn(dummyUser);
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(adminRole));
 
-        User result = userService.assignRoleToUser(1L, adminRole);
+        User result = userService.assignRoleToUser(1L, 1L);
 
         assertTrue(result.getRoles().contains(adminRole));
         assertEquals(result.getRoles(), dummyUser.getRoles());
@@ -143,8 +147,10 @@ public class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(dummyUser));
         when(userRepository.save(dummyUser)).thenReturn(dummyUser);
+        when(roleRepository.findById(1L)).thenReturn(Optional.of(adminRole));
 
-        User result = userService.assignRoleToUser(1L, adminRole);
+
+        User result = userService.assignRoleToUser(1L, 1L);
 
         assertEquals(1, dummyUser.getRoles().size());
 
@@ -169,9 +175,10 @@ public class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(dummyUser));
         when(userRepository.save(dummyUser)).thenReturn(dummyUser);
+        when(roleRepository.findById(99L)).thenReturn(Optional.of(duplicateAdminRole));
 
         // Wir versuchen, das Duplikat hinzuzufügen
-        userService.assignRoleToUser(1L, duplicateAdminRole);
+        userService.assignRoleToUser(1L, 99L);
 
         // 3. ASSERT
         // Das HashSet hat die zweite Rolle abgewehrt, weil der Name identisch ist!

@@ -2,7 +2,10 @@ package org.taskhub.tasks;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.taskhub.projects.Project;
+import org.taskhub.projects.ProjectRepository;
 import org.taskhub.users.User;
+import org.taskhub.users.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +14,8 @@ import java.util.Optional;
 @Service
 public class TaskService {
     private final TaskRepository taskRepository;
-    //private final ProjectRepository projectRepository;
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
     
     public Task getTaskById(Long id) {return taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + id)) ;}
 
@@ -28,25 +32,29 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public boolean deleteTask(Long id)  {
+    public void deleteTask(Long id)
+    {
         if (!taskRepository.existsById(id)) {
-            return false;
+            throw new RuntimeException("Task nicht gefunden mit ID: " + id);
         }
         taskRepository.deleteById(id);
-        return true;
     }
 
-    public Task assignUserToTask(Long taskId, User responsibleUser)
+    public Task assignUserToTask(Long taskId, Long userId)
     {
-        return taskRepository.findById(taskId).map(task -> {
-            task.setResponsibleUser(responsibleUser);
 
-            if (task.getProgress() == TaskProgress.UNASSIGNED)
-            {
-                task.setProgress(TaskProgress.ASSIGNED);
-            }
+        User responsibleUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User nicht gefunden mit der ID: " + userId));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + taskId));
+
+        task.setResponsibleUser(responsibleUser);
+        if (task.getProgress() == TaskProgress.UNASSIGNED)
+        {
+            task.setProgress(TaskProgress.ASSIGNED);
+        }
         return taskRepository.save(task);
-        }).orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + taskId));
     }
 
     public Task removeUserFromTask(Long taskId)
@@ -59,5 +67,25 @@ public class TaskService {
             }
             return taskRepository.save(task);
         }).orElseThrow(() -> new RuntimeException("Task nicht  gefunden mit der ID: " + taskId));
+    }
+
+    public Task addTaskToProject(Long taskId, Long projectId)
+    {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new RuntimeException("Projekt nicht gefunden mit der ID: " + projectId));
+
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + taskId));
+
+        task.setProject(project);
+        return taskRepository.save(task);
+    }
+
+    public Task removeTaskFromProject(Long taskId)
+    {
+        return taskRepository.findById(taskId).map(task -> {
+            task.setProject(null);
+            return taskRepository.save(task);
+        }).orElseThrow(() -> new RuntimeException("Task nicht gefunden mit der ID: " + taskId));
     }
 }
