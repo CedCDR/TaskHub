@@ -27,10 +27,13 @@ public class User extends BaseEntity {
     private String firstName;
 
     @Nonnull
-    private String secondName;
+    private String lastName;
 
     @Nonnull
+    @Column(unique = true)
     private String email;
+
+    private String password;
 
     private String phoneNumber;
 

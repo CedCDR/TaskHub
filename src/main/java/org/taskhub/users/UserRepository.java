@@ -4,7 +4,10 @@ package org.taskhub.users;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+import java.util.Optional;
 
+public interface UserRepository extends JpaRepository<User, Long> {
+    boolean existsByMail(String email);
+    Optional<User> findByMail(String email);
 
 }

@@ -1,15 +1,19 @@
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.taskhub.roles.Role;
 import org.taskhub.roles.RoleRepository;
 import org.taskhub.users.User;
+import org.taskhub.users.UserCreateDto;
 import org.taskhub.users.UserRepository;
 import org.taskhub.users.UserService;
 
 import java.util.Optional;
+import java.util.OptionalLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -22,6 +26,9 @@ public class UserServiceTest {
 
     @Mock
     private RoleRepository roleRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -67,19 +74,65 @@ public class UserServiceTest {
     // ==================================
 
     @Test
-    void createUser_CreatesAndReturnsUser()
+    void createUser_CreatesAndReturnsUserDto()
     {
-        User dummyUser = new User();
-        dummyUser.setId(1L);
-        dummyUser.setFirstName("Cedric");
+        UserCreateDto dummyUser = new UserCreateDto(
+                "Cedric", "Abissa", "c.abissa@gmail.com", "Test1234");
 
-        when(userRepository.save(dummyUser)).thenReturn(dummyUser);
+        User expectedUser = new User();
+        expectedUser.setId(1L);
+        expectedUser.setFirstName("Cedric");
+        expectedUser.setLastName("Abissa");
+        expectedUser.setPassword("GehashtesPasswort");
+
+        when(passwordEncoder.encode("Test1234")).thenReturn("GehashtesPasswort");
+        // Da der Service das User-Objekt intern mit 'new User()' frisch erstellt,
+        // sagen wir dem Mock: "Egal welches User-Objekt du gleich zum Speichern kriegst,
+        // nimm es an und gib unseren expectedSavedUser zurück."
+        when(userRepository.save(any(User.class))).thenReturn(expectedUser);
 
         User result = userService.createUser(dummyUser);
 
-        verify(userRepository, times(1)).save(dummyUser);
+        verify(userRepository, times(1)).save(any(User.class));
         assertNotNull(result);
         assertEquals("Cedric", result.getFirstName());
+    }
+
+    @Test
+    void createUser_HashesPasswordBeforeSaving()
+    {
+        UserCreateDto dummyUser = new UserCreateDto(
+                "Cedric", "Abissa", "c.abissa@gmail.com", "Test1234");
+        when(passwordEncoder.encode("Test1234")).thenReturn("GehashtesPasswort");
+
+        userService.createUser(dummyUser);
+
+        // Wir bereiten eine "Kamera" vor, die speziell darauf eingestellt ist, ein User-Objekt aufzunehmen
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        // Wir prüfen, ob save() aufgerufen wurde. Gleichzeitig fängt .capture() das exakte User-Objekt ab, das der Service in diesem Moment an die Datenbank schickt.
+        verify(userRepository).save(userCaptor.capture());
+
+        // Wir holen das abgefangene Objekt aus dem Captor heraus, um seine Werte zu überprüfen
+        User capturedUser = userCaptor.getValue();
+
+        assertEquals("GehashtesPasswort", capturedUser.getPassword());
+    }
+
+    @Test
+    void createUser_ThrowsException_WhenEmailAlreadyExists()
+    {
+        UserCreateDto dummyUserDto = new UserCreateDto(
+                "Cedric", "Abissa", "c.abissa@gmail.com", "Test1234");
+
+        when(userRepository.existsByMail(dummyUserDto.email())).thenReturn(true);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            userService.createUser(dummyUserDto);
+        });
+
+        assertTrue(exception.getMessage().contains("E-Mail ist bereits vergeben"));
+        verify(userRepository, times(0)).save(any(User.class));
+
     }
 
     // ==================================

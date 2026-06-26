@@ -1,6 +1,7 @@
 package org.taskhub.users;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.taskhub.roles.Role;
 import org.taskhub.roles.RoleRepository;
@@ -18,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public User getUserById(Long id){
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException( "User nicht gefunden mit der ID: " + id));
@@ -27,7 +29,20 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User createUser(User createdUser) {
+    public User createUser(UserCreateDto dto) {
+        if (userRepository.existsByMail(dto.email())) {
+            throw new RuntimeException("E-Mail ist bereits vergeben!");
+        }
+
+        User createdUser = new User();
+
+        createdUser.setFirstName(dto.firstName());
+        createdUser.setLastName(dto.lastName());
+        createdUser.setEmail(dto.email());
+
+        String hashedPassword = passwordEncoder.encode(dto.password());
+        createdUser.setPassword(hashedPassword);
+
         return userRepository.save(createdUser);
     }
 
