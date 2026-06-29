@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -12,15 +13,18 @@ import org.taskhub.config.SecurityConfig;
 import org.taskhub.users.User;
 import org.taskhub.users.UserController;
 import org.taskhub.users.UserService;
+import org.taskhub.users.dto.UserCreateDto;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
 @Import(SecurityConfig.class)
@@ -28,6 +32,9 @@ public class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private UserService userService;
@@ -96,5 +103,52 @@ public class UserControllerTest {
         mockMvc.perform(get("/api/v1/users"))
                 .andExpect(status().isOk()) // Es muss trotzdem ein 200 OK sein!
                 .andExpect(jsonPath("$", hasSize(0))); // Das JSON-Array muss leer sein
+    }
+
+    // ==========================
+    // Tests für createUser()
+    // ==========================
+
+    @Test
+    void createUser_Returns201AndUserDetailDto_WhenDataIsValid() throws Exception
+    {
+        UserCreateDto requestDto  = new UserCreateDto(
+                "Cedric", "Abissa",
+                "c.abissa@gmail.com", "Test1234");
+
+        User savedUser = new User();
+        savedUser.setId(67L);
+        savedUser.setFirstName("Cedric");
+        savedUser.setLastName("Abissa");
+        savedUser.setEmail("c.abissa@gmail.com");
+        savedUser.setRoles(Set.of());
+
+        when(userService.createUser(any(UserCreateDto.class))).thenReturn(savedUser);
+
+        mockMvc.perform(post("/api/v1/users")
+                // Das Request ist in JSON-Format
+                .contentType(MediaType.APPLICATION_JSON)
+                // Objekt in JSON wandeln
+                .content(objectMapper.writeValueAsString(requestDto)))
+                // Erwarte 201 Created
+                .andExpect(status().isCreated())
+                // Prüfe den Location Header
+                .andExpect(header().string("Location", "/api/v1/users/67"))
+                // Prüfe die generierte ID im Body
+                .andExpect(jsonPath("$.id").value(67))
+                .andExpect(jsonPath("$.firstName").value("Cedric"));
+
+    }
+
+    @Test
+    void createUser_Returns400BadRequest_WhenDataIsInvalid() throws Exception
+    {
+        UserCreateDto invalidDto = new UserCreateDto("Cedric", "Abissa",
+                "keine-mail","abc");
+
+        mockMvc.perform(post("/api/v1/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(invalidDto)))
+                .andExpect(status().isBadRequest());
     }
 }
