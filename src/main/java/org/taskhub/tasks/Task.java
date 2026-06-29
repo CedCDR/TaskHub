@@ -18,7 +18,7 @@ public class Task extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
     @Nonnull
     private String name;

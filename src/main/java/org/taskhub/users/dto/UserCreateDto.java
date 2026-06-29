@@ -1,4 +1,4 @@
-package org.taskhub.users;
+package org.taskhub.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

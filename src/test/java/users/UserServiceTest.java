@@ -1,3 +1,5 @@
+package users;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -8,12 +10,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.taskhub.roles.Role;
 import org.taskhub.roles.RoleRepository;
 import org.taskhub.users.User;
-import org.taskhub.users.UserCreateDto;
+import org.taskhub.users.dto.UserCreateDto;
 import org.taskhub.users.UserRepository;
 import org.taskhub.users.UserService;
 
 import java.util.Optional;
-import java.util.OptionalLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

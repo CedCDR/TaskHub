@@ -21,13 +21,13 @@ public class Project extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
     @Nonnull
     private String name;
 
     @Nonnull
-    private long  projectNumber;
+    private Long  projectNumber;
 
     @ManyToOne
     @JoinColumn(name = "project_lead_id")

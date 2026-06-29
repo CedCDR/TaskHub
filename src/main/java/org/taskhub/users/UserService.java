@@ -5,11 +5,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.taskhub.roles.Role;
 import org.taskhub.roles.RoleRepository;
-import org.taskhub.tasks.Task;
+import org.taskhub.users.dto.UserCreateDto;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 //RequiredArgsConstructor erstellt einen Konstruktor für alle final Attribute
 @RequiredArgsConstructor

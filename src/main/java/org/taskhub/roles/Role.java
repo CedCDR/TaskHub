@@ -17,7 +17,7 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private Long id;
 
     @EqualsAndHashCode.Include //Nur Namen vergleichen
     @Column(unique = true) //Keine Rollen mit identischen Namen
