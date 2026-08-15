@@ -258,7 +258,7 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(dummyUser));
         when(userRepository.save(dummyUser)).thenReturn(dummyUser);
 
-        User result = userService.removeRoleFromUser(1L, adminRole);
+        User result = userService.removeRoleFromUser(1L, 1L);
 
         assertEquals(0, dummyUser.getRoles().size());
     }
@@ -282,7 +282,7 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(dummyUser));
         when(userRepository.save(dummyUser)).thenReturn(dummyUser);
 
-        userService.removeRoleFromUser(1L, employeeRole);
+        userService.removeRoleFromUser(1L, 99L);
 
         assertEquals(1, dummyUser.getRoles().size());
     }

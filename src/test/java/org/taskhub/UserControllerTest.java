@@ -2,6 +2,7 @@ package org.taskhub;
 
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -10,6 +11,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.taskhub.config.SecurityConfig;
+import org.taskhub.roles.Role;
 import org.taskhub.users.User;
 import org.taskhub.users.UserController;
 import org.taskhub.users.UserService;
@@ -19,11 +21,12 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
@@ -38,6 +41,7 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserService userService;
+
 
     // ==================================
     // Tests für getUserById()
@@ -150,5 +154,101 @@ public class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    // =============================
+    // Tests für deleteUser()
+    // =============================
+
+    @Test
+    void deleteUser_Returns204NoContent_WhenUserExists() throws Exception
+    {
+        Mockito.doNothing().when(userService).deleteUser(1L);
+
+        mockMvc.perform(delete("/api/v1/users/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteUser_Returns404NotFound_WhenUserDoesNotExist() throws Exception
+    {
+        doThrow(new RuntimeException("User nicht gefunden mit ID: 99"))
+                .when(userService).deleteUser(99L);
+
+
+        mockMvc.perform(delete("/api/v1/users/99"))
+                .andExpect(status().isNotFound()) // Erwarte 404 Not Found vom Handler
+                .andExpect(content().string("User nicht gefunden mit ID: 99"));
+    }
+
+    // =============================
+    // Tests für assignRoleToUser()
+    // =============================
+
+    @Test
+    void assignRoleToUser_Returns200AndUpdatedUser_WhenSuccessful() throws Exception
+    {
+
+        Role adminRole = new Role();
+        adminRole.setId(2L);
+        adminRole.setName("ADMIN");
+
+        User updatedUser = new User();
+        updatedUser.setId(1L);
+        updatedUser.setFirstName("Cedric");
+        updatedUser.setRoles(Set.of(adminRole)); // Der User hat die Rolle jetzt!
+
+        when(userService.assignRoleToUser(1L, 2L)).thenReturn(updatedUser);
+
+        mockMvc.perform(put("/api/v1/users/1/roles/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                // Wir prüfen gezielt, ob das Array "roles" den Wert "ADMIN" enthält!
+                .andExpect(jsonPath("$.roles", hasItem("ADMIN")));
+    }
+
+    @Test
+    void assignRoleToUser_Returns404_WhenUserNotFound() throws Exception
+    {
+
+        when(userService.assignRoleToUser(99L, 2L))
+                .thenThrow(new RuntimeException("User nicht gefunden mit der ID: 99"));
+
+        mockMvc.perform(put("/api/v1/users/99/roles/2"))
+                .andExpect(status().isNotFound()) // Unser GlobalExceptionHandler greift ein!
+                .andExpect(content().string("User nicht gefunden mit der ID: 99"));
+    }
+
+    // =============================
+    // Tests für RemoveRoleFromUser()
+    // =============================
+
+    @Test
+    void removeRoleFromUser_Returns200AndUpdatedUser_WhenSuccessful() throws Exception {
+
+        User updatedUser = new User();
+        updatedUser.setId(1L);
+        updatedUser.setFirstName("Cedric");
+        // Wir setzen eine leere Liste, weil die Rolle ja entfernt wurde!
+        updatedUser.setRoles(Set.of());
+
+        when(userService.removeRoleFromUser(1L, 2L)).thenReturn(updatedUser);
+
+        mockMvc.perform(delete("/api/v1/users/1/roles/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                // Wir prüfen gezielt, ob das Array "roles" jetzt leer ist (Größe 0)
+                .andExpect(jsonPath("$.roles", hasSize(0)));
+    }
+
+    @Test
+    void removeRoleFromUser_Returns404_WhenUserNotFound() throws Exception {
+
+        when(userService.removeRoleFromUser(99L, 2L))
+                .thenThrow(new RuntimeException("User nicht gefunden mit der ID: 99"));
+
+        mockMvc.perform(delete("/api/v1/users/99/roles/2"))
+                .andExpect(status().isNotFound()) // Unser GlobalExceptionHandler greift ein!
+                .andExpect(content().string("User nicht gefunden mit der ID: 99"));
     }
 }

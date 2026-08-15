@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.taskhub.roles.Role;
+import org.taskhub.roles.UserRoleUpdateDto;
 import org.taskhub.users.dto.UserCreateDto;
 import org.taskhub.users.dto.UserDetailDto;
 import org.taskhub.users.dto.UserSummaryDto;
@@ -79,5 +80,63 @@ public class UserController {
         );
 
         return ResponseEntity.created(location).body(responseDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id)
+    {
+        // Dank GlobalExceptionHandler wird hier 404 abgefangen und returned
+        // Wenn der Funktionsaufruf eine RuntimeException auslöst
+        userService.deleteUser(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{userId}/roles/{roleId}")
+    public ResponseEntity<UserDetailDto> assignRoleToUser(
+            @PathVariable Long userId,
+            @PathVariable Long roleId) {
+
+        User updatedUser = userService.assignRoleToUser(userId, roleId);
+
+        Set<String> roleNames = updatedUser.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        UserDetailDto responseDto = new UserDetailDto(
+                updatedUser.getId(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getEmail(),
+                updatedUser.getPhoneNumber(),
+                updatedUser.getProfilePictureURL(),
+                roleNames
+        );
+
+        // 3. Status 200 OK mit dem aktualisierten Profil zurückgeben
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @DeleteMapping("/{userId}/roles/{roleId}")
+    public ResponseEntity<UserDetailDto> removeRoleFromUser(
+            @PathVariable Long userId,
+            @PathVariable Long roleId) {
+
+        User updatedUser = userService.removeRoleFromUser(userId, roleId);
+
+        Set<String> roleNames = updatedUser.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
+
+        UserDetailDto responseDto = new UserDetailDto(
+                updatedUser.getId(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getEmail(),
+                updatedUser.getPhoneNumber(),
+                updatedUser.getProfilePictureURL(),
+                roleNames
+        );
+
+        return ResponseEntity.ok(responseDto);
     }
 }

@@ -64,9 +64,10 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User removeRoleFromUser(Long userId, Role rolle)
+    public User removeRoleFromUser(Long userId, Long roleId)
     {
         return userRepository.findById(userId).map(user  -> {
+            Role rolle = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Rolle nicht gefunden mit der ID: " + roleId));
             user.removeRole(rolle);
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("User nicht gefunden mit der ID: " + userId));
