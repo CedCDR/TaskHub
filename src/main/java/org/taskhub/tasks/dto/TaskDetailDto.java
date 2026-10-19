@@ -31,12 +31,7 @@ public record TaskDetailDto(
         if (task.getResponsibleUser() != null)
         {
             User user = task.getResponsibleUser();
-            userDto = new UserSummaryDto(
-                    user.getId(),
-                    user.getFirstName(),
-                    user.getLastName(),
-                    user.getProfilePictureURL()
-            );
+            userDto = UserSummaryDto.fromEntity(user);
         }
 
         Long projectId = null;
@@ -45,17 +40,11 @@ public record TaskDetailDto(
             projectId = task.getProject().getId();
         }
 
-        Date dueDateStr = null;
-        if (task.getDueDate() != null)
-        {
-            dueDateStr = task.getDueDate();
-        }
-
         return new TaskDetailDto(
                 task.getId(),
                 task.getName(),
                 task.getDescription(),
-                dueDateStr,
+                task.getDueDate(),
                 task.getProgress(),
                 userDto,
                 projectId

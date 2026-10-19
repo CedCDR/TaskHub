@@ -29,13 +29,7 @@ public class UserController {
     public ResponseEntity<UserDetailDto> getUserById(@PathVariable Long id)
     {
         User user = userService.getUserById(id);
-
-        //UserDetailDto benutzt Strings, um die Rollen darzustellen
-        Set<String> roleNames = user.getRoles().stream().map(Role::getName).collect(Collectors.toSet());
-
-        UserDetailDto response  = new UserDetailDto(
-                user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(),
-                user.getPhoneNumber(), user.getProfilePictureURL(), roleNames);
+        UserDetailDto response  = UserDetailDto.fromEntity(user);
 
         return ResponseEntity.ok(response);
     }
@@ -46,12 +40,7 @@ public class UserController {
         List<User> users = userService.getAllUsers();
 
         List<UserSummaryDto> response = users.stream()
-                .map(user -> new UserSummaryDto(
-                        user.getId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getProfilePictureURL()
-                ))
+                .map(UserSummaryDto::fromEntity)
                 .toList();
 
         return ResponseEntity.ok(response);
@@ -65,19 +54,8 @@ public class UserController {
 
         URI location = URI.create("/api/v1/users/" + createdUser.getId());
 
-        // User-Entität in DTO umwandeln
-        Set<String> roleNames = createdUser.getRoles().stream()
-                .map(Role::getName).collect(Collectors.toSet());
-
-        UserDetailDto responseDto = new UserDetailDto(
-                createdUser.getId(),
-                createdUser.getFirstName(),
-                createdUser.getLastName(),
-                createdUser.getEmail(),
-                createdUser.getPhoneNumber(),
-                createdUser.getProfilePictureURL(),
-                roleNames
-        );
+        // Erstellte User-Entität in DTO umwandeln
+        UserDetailDto responseDto = UserDetailDto.fromEntity(createdUser);
 
         return ResponseEntity.created(location).body(responseDto);
     }
@@ -98,21 +76,9 @@ public class UserController {
 
         User updatedUser = userService.assignRoleToUser(userId, roleId);
 
-        Set<String> roleNames = updatedUser.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
+        UserDetailDto responseDto = UserDetailDto.fromEntity(updatedUser);
 
-        UserDetailDto responseDto = new UserDetailDto(
-                updatedUser.getId(),
-                updatedUser.getFirstName(),
-                updatedUser.getLastName(),
-                updatedUser.getEmail(),
-                updatedUser.getPhoneNumber(),
-                updatedUser.getProfilePictureURL(),
-                roleNames
-        );
-
-        // 3. Status 200 OK mit dem aktualisierten Profil zurückgeben
+        // Status 200 OK mit dem aktualisierten Profil zurückgeben
         return ResponseEntity.ok(responseDto);
     }
 
@@ -123,19 +89,7 @@ public class UserController {
 
         User updatedUser = userService.removeRoleFromUser(userId, roleId);
 
-        Set<String> roleNames = updatedUser.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-
-        UserDetailDto responseDto = new UserDetailDto(
-                updatedUser.getId(),
-                updatedUser.getFirstName(),
-                updatedUser.getLastName(),
-                updatedUser.getEmail(),
-                updatedUser.getPhoneNumber(),
-                updatedUser.getProfilePictureURL(),
-                roleNames
-        );
+        UserDetailDto responseDto = UserDetailDto.fromEntity(updatedUser);
 
         return ResponseEntity.ok(responseDto);
     }
